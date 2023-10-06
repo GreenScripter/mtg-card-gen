@@ -1,0 +1,8 @@
+name: env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - pip=20.0.2
+  - pytorch=2.0.0

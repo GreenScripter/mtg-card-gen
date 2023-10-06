@@ -1,0 +1,15 @@
+.DS_Store
+.classpath
+.project
+.settings
+Cards.json
+bin
+cardfromtype.txt
+cardoracle.txt
+cardtocost.txt
+cardtoname.txt
+colortotype.txt
+nametocard.txt
+oracle-cards-*.json
+*.pt
+**/__pycache__
