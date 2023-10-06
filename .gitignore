@@ -3,6 +3,7 @@
 .project
 .settings
 Cards.json
+Keywords.json
 bin
 cardfromtype.txt
 cardoracle.txt

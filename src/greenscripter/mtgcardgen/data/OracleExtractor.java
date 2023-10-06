@@ -19,6 +19,7 @@ public class OracleExtractor {
 
 	public static void main(String[] args) throws Exception {
 		List<Card> cards = CardExtractor.getFilteredCards();
+		List<String> keywords = KeywordManager.getKeywords();
 		List<CleanedCard> oracle = Collections.synchronizedList(new ArrayList<>());
 		Set<String> planeswalkerTypes = Collections.synchronizedSet(new HashSet<>());
 		cards.parallelStream().forEach(c -> {
@@ -53,6 +54,15 @@ public class OracleExtractor {
 				}
 			}
 
+			cleaned = cleaned.replace("—", " — ").replace("  ", " ").replace("  ", " ");
+
+			for (String s : c.keywords) {
+				if (keywords.contains(s)) continue;
+				if (cleaned.contains(s + " — ")) {
+					cleaned = cleaned.replace(s + " — ", "");
+				}
+			}
+
 			cleaned = cleaned.replaceAll("([^{][0-9][^}])", " $1 ")//
 					.replaceAll("(^|[^{])(.)\\/(.)([^}]|)", "$1$2 / $3$4")//
 					.replaceAll("\\(.*?\\)", "")//
@@ -66,9 +76,10 @@ public class OracleExtractor {
 					.replace(";", " .")//
 					.replace("!", " .")//
 					.replace("\n", " | ")//
-					.replace("—", "-")//
-					.replace("−", "-")//
-					.replace("-", " - ")//
+					//					.replace("—", "-")//emdash to minus
+					.replace("—", " — ")//emdash
+					.replace("−", "-")//unicode minus to minus
+					.replace("-", " - ")//minus
 					.replace("+", " + ")//
 					.replace("\"", " \" ")//
 					.replace("(", "")//

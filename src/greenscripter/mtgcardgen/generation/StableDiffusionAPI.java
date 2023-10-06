@@ -40,26 +40,29 @@ public class StableDiffusionAPI {
 		data.restore_faces = true;
 		data.negative_prompt = "border, frame, watermark, text, nudity, naked, nsfw";
 		data.prompt = prompt;
-		
+
 		byte[] response = sendPOST(url, gson.toJson(data).getBytes());
 		Txt2ImgResp results = gson.fromJson(new String(response), Txt2ImgResp.class);
-		
+
 		return ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(results.images.get(0))));
 	}
-	
+
 	private static byte[] sendPOST(String url, byte[] data) throws IOException {
-		
+
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setRequestMethod("POST");
-		
+
+		con.connect();
+		con.getOutputStream().write(data);
+
 		int responseCode = con.getResponseCode();
 		if (responseCode == HttpURLConnection.HTTP_OK) {
 			return con.getInputStream().readAllBytes();
 		} else {
 			return null;
 		}
-		
+
 	}
 
 	public static class Txt2Img {
