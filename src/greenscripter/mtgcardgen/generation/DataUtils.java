@@ -21,9 +21,9 @@ import greenscripter.mtgrenderer.CardRenderer;
 
 public class DataUtils {
 
-	public static void main(String[] args) {
-		System.out.println(prettyText("{t} flying | {1} , {t}, sacrifice ~ : gain 1 life . | at the beginning of your combat step , sacrifice an artifact, a non-goblin , scry 1 , * / + x create a 1 / 1 legendary goblin wizard creature land token with \" regenerate {b} \" , ~ gets + 1 / - 1 or + 10 / + 10 . | {b} , {t} : tap target creature . if it is blue , ~ deals damage equal to ~ 's power to that creature . @ | iii - sacrifice this saga . ", "Test", "Other Name"));
-	}
+	//	public static void main(String[] args) {
+	//		System.out.println(prettyText("{t} flying | {1} , {t}, sacrifice ~ : gain 1 life . | at the beginning of your combat step , sacrifice an artifact, a non-goblin , scry 1 , * / + x create a 1 / 1 legendary goblin wizard creature land token with \" regenerate {b} \" , ~ gets + 1 / - 1 or + 10 / + 10 . | {b} , {t} : tap target creature . if it is blue , ~ deals damage equal to ~ 's power to that creature . @ | iii - sacrifice this saga . ", "Test", "Other Name"));
+	//	}
 
 	public static String capitalizeWords(String s) {
 		String[] parts = s.split(" ");
@@ -57,20 +57,34 @@ public class DataUtils {
 		oracle = oracle.replace(" i ", " I ");
 		oracle = oracle.replace(" ii ", " II ");
 		oracle = oracle.replace(" iii ", " III ");
-		oracle = oracle.replace(" non - ", " non-");
 
 		oracle = oracle.replace("| ", "\n");
+		oracle = oracle.replace("|", "\n").trim();
+		oracle = oracle.replace("<pipe>", "|");
 
 		if (oracle.length() == 0) return oracle;
 
 		for (String s : subtypes) {
 			oracle = oracle.replace(" " + s.toLowerCase() + " ", " " + s + " ");
+			oracle = oracle.replace(" " + s.toLowerCase() + "s ", " " + s + "s ");
+			if (oracle.endsWith(s.toLowerCase())) {
+				oracle = oracle.replace(" " + s.toLowerCase(), " " + s);
+			}
+			if (oracle.endsWith(" " + s.toLowerCase() + "s")) {
+				oracle = oracle.replace(" " + s.toLowerCase() + "s", " " + s + "s");
+			}
 		}
+
+		oracle = oracle.replace(" non - ", " non-");
+		oracle = oracle.replace("\nnon - ", "\nnon-");
+
 		oracle = oracle.replace(" x ", " X ");
 		oracle = oracle.replace(" y ", " Y ");
 		oracle = oracle.replace(" z ", " Z ");
 
 		oracle = oracle.replaceAll("(([-+]) )?([0-9xXyYzZ*]+) \\/ (([-+]) )?([0-9xXyYzZ*])", "$2$3/$5$6");
+		oracle = oracle.replaceAll("([0-9]+) — ([0-9]+) \\| ", "$1-$2 | ");
+		oracle = oracle.replaceAll("([0-9]+) \\+ \\| ", "$1+ | ");
 		oracle = oracle.replace(" ,", ",");
 		oracle = oracle.replace(" .", ".");
 		oracle = oracle.replace(" :", ":");
@@ -82,12 +96,23 @@ public class DataUtils {
 
 		boolean inSymbol = false;
 		boolean inQuotes = false;
+		boolean inSingleQuotes = false;
 		boolean inCost = false;
 		List<Integer> inCostStarts = new ArrayList<>();
 
 		for (int i = 0; i < sb.length(); i++) {
 			if (sb.charAt(i) == '{') {
 				inSymbol = true;
+			}
+			if (sb.charAt(i) == '}') {
+				inSymbol = false;
+			}
+			if (sb.charAt(i) == '[' && i + 1 < sb.length()) {
+				sb.deleteCharAt(i + 1);
+			}
+			if (sb.charAt(i) == ']' && i > 0) {
+				sb.deleteCharAt(i - 1);
+				i--;
 			}
 			if (sb.charAt(i) == '}') {
 				inSymbol = false;
@@ -103,8 +128,26 @@ public class DataUtils {
 						sb.deleteCharAt(i);
 						i--;
 					}
+					inCostStarts.clear();
+					inCost = false;
 				}
 				inQuotes = !inQuotes;
+			}
+			if (i >= 1 && i + 1 < sb.length() && sb.charAt(i) == '\'' && sb.charAt(i + 1) == ' ' && sb.charAt(i - 1) == ' ') {
+				if (inSingleQuotes) {
+					sb.deleteCharAt(i - 1);
+					i--;
+				} else {
+					if (i < sb.length() - 1) {
+						sb.deleteCharAt(i + 1);
+					} else {
+						sb.deleteCharAt(i);
+						i--;
+					}
+					inCostStarts.clear();
+					inCost = false;
+				}
+				inSingleQuotes = !inSingleQuotes;
 			}
 
 			if (sb.charAt(i) == ',') {
@@ -128,6 +171,12 @@ public class DataUtils {
 			if (i >= 1 && (sb.charAt(i - 1) == '\n' || sb.charAt(i - 1) == '"')) {
 				sb.setCharAt(i, Character.toUpperCase(sb.charAt(i)));
 			}
+			if (i >= 2 && sb.charAt(i - 2) == '—') {
+				sb.setCharAt(i, Character.toUpperCase(sb.charAt(i)));
+			}
+			if (i >= 2 && sb.charAt(i - 2) == '|' && sb.charAt(i - 1) == ' ') {
+				sb.setCharAt(i, Character.toUpperCase(sb.charAt(i)));
+			}
 			if (i >= 1 && (sb.charAt(i) == '\n' && sb.charAt(i - 1) == ' ')) {
 				sb.deleteCharAt(i - 1);
 				i--;
@@ -135,8 +184,11 @@ public class DataUtils {
 			if (i >= 2 && (sb.charAt(i - 2) == '.' || sb.charAt(i - 2) == ':' || sb.charAt(i - 2) == '•')) {
 				sb.setCharAt(i, Character.toUpperCase(sb.charAt(i)));
 			}
+			if (i >= 3 && sb.charAt(i - 3) == '.' && sb.charAt(i - 2) == '"' && sb.charAt(i - 1) == ' ') {
+				sb.setCharAt(i, Character.toUpperCase(sb.charAt(i)));
+			}
 
-			if (i >= 4 && (sb.charAt(i - 4) == 'I' && sb.charAt(i - 2) == '-')) {
+			if (i >= 4 && (sb.charAt(i - 4) == 'I' && (sb.charAt(i - 2) == '-' || sb.charAt(i - 2) == '—'))) {
 				sb.setCharAt(i, Character.toUpperCase(sb.charAt(i)));
 			}
 			if (i >= 3 && (sb.charAt(i - 3) == 's' && sb.charAt(i - 2) == ' ' && sb.charAt(i - 1) == '\'' && sb.charAt(i) == ' ')) {
@@ -146,11 +198,28 @@ public class DataUtils {
 		}
 
 		oracle = sb.toString();
-
+		oracle = oracle.replaceAll("(-|\\+) ([0-9X]+): ", "$1$2: ");
 		oracle = oracle.replaceAll(", sacrifice (.*?):", ", Sacrifice $1:");
 		oracle = oracle.replaceAll(", remove (.*?):", ", Remove $1:");
+		oracle = oracle.replaceAll("\nLevel ([0-9]+) \\+", "\nLEVEL $1+");
+		oracle = oracle.replaceAll("\nLevel ([0-9]+) \\- ([0-9]+)", "\nLEVEL $1-$2");
 		oracle = oracle.replace("and / or", "and/or");
 		oracle = oracle.replace("weren ' t", "weren't");
+		//		oracle = oracle.replace("non-aura", "non-Aura");
+		oracle = oracle.replace("Eldrazi scion", "Eldrazi Scion");
+		oracle = oracle.replace("arcane", "Arcane");
+		oracle = oracle.replace("elves", "Elves");
+		oracle = oracle.replace("werewolves", "Werewolves");
+		oracle = oracle.replace("wolves", "Wolves");
+		oracle = oracle.replace("ring tempts you", "Ring tempts you");
+		oracle = oracle.replace("For mirrodin.", "For Mirrodin!");
+		oracle = oracle.replace("monster role", "Monster Role");
+		oracle = oracle.replace("young hero role", "Young Hero Role");
+		oracle = oracle.replace("wicked role", "Wicked Role");
+		oracle = oracle.replace("royal role", "Royal Role");
+		oracle = oracle.replace("cursed role", "Cursed Role");
+		oracle = oracle.replace("sorcerer role", "Sorcerer Role");
+		oracle = oracle.replace("ring-bearer", "Ring-bearer");
 		oracle = oracle.replace("~", cardName);
 		oracle = oracle.replace("@", referenceName);
 
@@ -244,6 +313,14 @@ public class DataUtils {
 				if (parts.length > 1) {
 					subtypes.addAll(List.of(parts[1].strip().split(" ")));
 				}
+				subtypes.add("Prism");
+				subtypes.add("Servo");
+				subtypes.add("Sculpture");
+				subtypes.add("Adventure");
+				subtypes.add("Saproling");
+				subtypes.add("Blood");
+				subtypes.add("Blinkmoth");
+				subtypes.add("Background");
 			}
 			supertypes.remove("Stickers");
 			//			validNameLetters.add("<>");
@@ -323,7 +400,7 @@ public class DataUtils {
 	public static List<CleanedCard> getCleanedCards() throws Exception {
 		return Arrays.asList(new Gson().fromJson(Files.readString(new File("Cards.json").toPath()), CleanedCard[].class));
 	}
-	
+
 	public static String getArtPrompt(MLCard card) {
 		if (card.type.contains("Creature")) {
 			return "a painting of a " + card.type.substring(card.type.indexOf("—") + 1) + " , " + DataUtils.mergeName(card.name) + ", mtg art , magic the gathering concept art , mtg art style , d&d concept art , nixeu and greg rutkowski , magic : the gathering art , magic the gathering artwork , jeff easley dramatic light , dale keown and greg rutkowski";

@@ -14,3 +14,8 @@ nametocard.txt
 oracle-cards-*.json
 *.pt
 **/__pycache__
+Python/env/
+bulkMLArt/
+bulkMLCards.json
+bulkMLRenders/
+bulkTempCards.json

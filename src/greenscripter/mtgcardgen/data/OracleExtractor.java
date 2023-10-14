@@ -63,6 +63,8 @@ public class OracleExtractor {
 				}
 			}
 
+			cleaned = cleaned.replaceAll("• [a-zA-Z ] — ", "• ").trim();
+
 			cleaned = cleaned.replaceAll("([^{][0-9][^}])", " $1 ")//
 					.replaceAll("(^|[^{])(.)\\/(.)([^}]|)", "$1$2 / $3$4")//
 					.replaceAll("\\(.*?\\)", "")//
@@ -73,8 +75,9 @@ public class OracleExtractor {
 					.replace("'s", " 's")//
 					.replace(",", " ,")//
 					.replace(".", " .")//
-					.replace(";", " .")//
+					.replace(";", " ,")//
 					.replace("!", " .")//
+					.replace("|", " <pipe> ")//
 					.replace("\n", " | ")//
 					//					.replace("—", "-")//emdash to minus
 					.replace("—", " — ")//emdash
@@ -91,17 +94,18 @@ public class OracleExtractor {
 			if (c.name.contains(",")) {
 				String name = c.name.substring(0, c.name.indexOf(","));
 
-				cleaned = cleaned.replace(name.toLowerCase(), "~");
+				cleaned = cleaned.replace(name.toLowerCase() + " ", "~ ");
 			}
 			if (c.name.contains(" the ") && c.type_line.contains("Creature")) {
 				String name = c.name.substring(0, c.name.indexOf(" the "));
-
-				cleaned = cleaned.replace(name.toLowerCase(), "~");
+				System.out.println(name);
+				cleaned = cleaned.replace(name.toLowerCase() + " ", "~ ");
 			}
 			if (c.name.contains(" of ") && c.type_line.contains("Creature")) {
 				String name = c.name.substring(0, c.name.indexOf(" of "));
+				System.out.println(name);
 
-				cleaned = cleaned.replace(name.toLowerCase(), "~");
+				cleaned = cleaned.replace(name.toLowerCase() + " ", "~ ");
 			}
 			if (cleaned.contains("planeswalker")) {
 				for (String s : planeswalkerTypes) {
@@ -126,8 +130,22 @@ public class OracleExtractor {
 					.replace("they ' re", "they're")//
 					.replace("they ' ve", "they've")//
 					.replace("that ' s", "that's")//
+					.replace("couldn ' t", "couldn't")//
+					.replace("weren ' t", "weren't")//
+					.replace("owners '", "owners'")//
+					.replace("controllers '", "controllers'")//
+					.replace("opponents '", "opponents'")//
+					.replace("players '", "players'")//
 					.replace("' s", "'s")//
-					.replace("jump - start", "jump-start");
+					.replace("jump - start", "jump-start")//
+					.replace("face - down", "face-down")//
+					.replace("face - up", "face-up")//
+					.replace("double - faced", "double-faced")//
+					.replace("assembly - worker", "assembly-worker")//
+					.replace("ring - bearer", "ring-bearer")//
+					.replace("six - sided", "six-sided")//
+					.replace("phased-out", "phased - out")//
+					.replace("an planeswalker", "a planeswalker");
 			if (cleaned.contains(" vitu ")) {
 				System.out.println(cleaned);
 				System.out.println(c.name);
