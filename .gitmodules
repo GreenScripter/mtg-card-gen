@@ -1,0 +1,3 @@
+[submodule "mtg-renderer"]
+	path = mtg-renderer
+	url = git@github.com:GreenScripter/mtg-renderer.git
