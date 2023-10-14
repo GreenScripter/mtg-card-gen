@@ -52,14 +52,18 @@ public class StableDiffusionAPI {
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setRequestMethod("POST");
-
+		con.setDoOutput(true);
+		con.setRequestProperty("Content-Type", "application/json; charset=utf-8");
 		con.connect();
 		con.getOutputStream().write(data);
 
 		int responseCode = con.getResponseCode();
+		
 		if (responseCode == HttpURLConnection.HTTP_OK) {
 			return con.getInputStream().readAllBytes();
 		} else {
+			System.out.println(responseCode);
+			System.out.println(new String(con.getInputStream().readAllBytes()));
 			return null;
 		}
 
