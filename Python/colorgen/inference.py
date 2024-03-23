@@ -32,10 +32,9 @@ def predict(dataset, model, text, next_words=1):
             word_index = np.random.choice(len(last_word_logits), p=p)
             if i+segment >= len(words):
                 words.append(dataset.index_to_word[word_index])
-            
-            if i >= next_words:
-                if dataset.index_to_word[word_index] == "****3":
-                    break
+                if i >= next_words:
+                    if dataset.index_to_word[word_index] == "****3":
+                        break
             
             i = i+1
 
