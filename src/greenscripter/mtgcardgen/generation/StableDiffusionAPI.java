@@ -35,8 +35,8 @@ public class StableDiffusionAPI {
 	public static BufferedImage txt2img(String target, String prompt) throws IOException {
 		String url = target + "/sdapi/v1/txt2img";
 		Txt2Img data = new Txt2Img();
-		data.cfg_scale = 7;
-		data.steps = 20;
+		data.cfg_scale = 1;
+		data.steps = 4;
 		data.restore_faces = true;
 		data.negative_prompt = "border, frame, watermark, text, nudity, naked, nsfw";
 		data.prompt = prompt;

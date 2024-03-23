@@ -25,6 +25,9 @@ public class Inference {
 
 	public static String python;
 	public static String mainFolder;
+
+	Object sync = python;
+
 	String model;
 	String[] extraArgs;
 
@@ -61,13 +64,21 @@ public class Inference {
 	}
 
 	public synchronized String request(String input) throws IOException {
-		synchronized (python) {
+		synchronized (sync) {
 			System.out.println("Request to " + model + " " + Arrays.toString(extraArgs) + ": [" + input + "]");
 			writer.append(input);
 			writer.newLine();
 			writer.flush();
 			return reader.readLine();
 		}
+	}
+
+	public Object getSync() {
+		return sync;
+	}
+
+	public void setSync(Object sync) {
+		this.sync = sync;
 	}
 
 }
