@@ -4,8 +4,8 @@ from torch import nn
 class Model(nn.Module):
     def __init__(self, dataset):
         super(Model, self).__init__()
-        self.lstm_size = 1024
-        self.embedding_dim = 1024
+        self.lstm_size = 256
+        self.embedding_dim = 256
         self.num_layers = 1
 
         n_vocab = len(dataset.uniq_words)

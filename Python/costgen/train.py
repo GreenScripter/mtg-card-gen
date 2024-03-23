@@ -16,7 +16,7 @@ def train(dataset, model, args):
     model.train()
 
     dataloader = DataLoader(dataset, batch_size=args.batch_size)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(torch.tensor([(2.0 if word=="****4" else 1.0) if len(word) > 0 and (word[0] == "{" or word[0] == "*") else 0.0 for index, word in enumerate(dataset.uniq_words)]))
 
     for epoch in range(args.max_epochs):
         state_h, state_c = model.init_state(args.sequence_length)
@@ -26,7 +26,7 @@ def train(dataset, model, args):
 
             y_pred, (state_h, state_c) = model(x, (state_h, state_c))
             loss = criterion(y_pred.transpose(1, 2), y)
-
+            
             state_h = state_h.detach()
             state_c = state_c.detach()
 
@@ -50,8 +50,8 @@ def train(dataset, model, args):
                 }, "model.pt")
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--max-epochs', type=int, default=1)
-parser.add_argument('--batch-size', type=int, default=512)
+parser.add_argument('--max-epochs', type=int, default=10)
+parser.add_argument('--batch-size', type=int, default=4096)
 parser.add_argument('--sequence-length', type=int, default=100)
 args = parser.parse_args()
 
@@ -60,7 +60,7 @@ dataset = Dataset(args)
 model = Model(dataset)
 optimizer = optim.Adam(model.parameters(), lr=0.0005)
 
-#checkpoint = torch.load("modelremote.pt", map_location=torch.device('cpu'))
+#checkpoint = torch.load("model.pt", map_location=torch.device('cpu'))
 #model.load_state_dict(checkpoint['model_state_dict'])
 #optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
